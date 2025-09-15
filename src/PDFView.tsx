@@ -23,6 +23,7 @@ export interface PDFViewProps extends ViewProps {
 
   initialMinimumZoomScale?: number;
   initialMaximumZoomScale?: number;
+  initialDocument?: { url: string };
 }
 
 export interface PDFViewMethods {
@@ -45,6 +46,7 @@ export const PDFView = forwardRef<PDFViewMethods, PDFViewProps>(
       onContentOffsetChange,
       initialMinimumZoomScale,
       initialMaximumZoomScale,
+      initialDocument,
       ...otherProps
     },
     forwardedRef
@@ -80,23 +82,37 @@ export const PDFView = forwardRef<PDFViewMethods, PDFViewProps>(
       },
     }));
 
+    const needsSetupRef = useRef(true);
+
     // Set initial zoom scales when component mounts
     useEffect(() => {
-      if (nativeViewRef.current) {
-        if (initialMinimumZoomScale !== undefined) {
-          Commands.setMinimumZoomScale(
-            nativeViewRef.current,
-            initialMinimumZoomScale
-          );
-        }
-        if (initialMaximumZoomScale !== undefined) {
-          Commands.setMaximumZoomScale(
-            nativeViewRef.current,
-            initialMaximumZoomScale
-          );
-        }
+      if (!needsSetupRef.current) {
+        return;
       }
-    }, [initialMinimumZoomScale, initialMaximumZoomScale]);
+      if (!nativeViewRef.current) {
+        return;
+      }
+      needsSetupRef.current = false;
+
+      if (initialMinimumZoomScale !== undefined) {
+        Commands.setMinimumZoomScale(
+          nativeViewRef.current,
+          initialMinimumZoomScale
+        );
+      }
+      if (initialMaximumZoomScale !== undefined) {
+        Commands.setMaximumZoomScale(
+          nativeViewRef.current,
+          initialMaximumZoomScale
+        );
+      }
+      if (initialDocument != null) {
+        Commands.loadDocumentFromURL(
+          nativeViewRef.current,
+          initialDocument.url
+        );
+      }
+    }, [initialMinimumZoomScale, initialMaximumZoomScale, initialDocument]);
 
     const handleContentOffsetChange = useCallback<
       CodegenTypes.DirectEventHandler<ContentOffsetChangeEvent>
