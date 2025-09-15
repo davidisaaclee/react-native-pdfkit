@@ -1,5 +1,6 @@
 #import <React/RCTViewComponentView.h>
 #import <UIKit/UIKit.h>
+#import <PDFKit/PDFKit.h>
 
 #ifndef PdfkitViewNativeComponent_h
 #define PdfkitViewNativeComponent_h

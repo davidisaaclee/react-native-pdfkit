@@ -14,7 +14,8 @@ using namespace facebook::react;
 @end
 
 @implementation PdfkitView {
-    UIView * _view;
+    PDFView * _pdfView;
+    UIScrollView * _scrollView;
 }
 
 + (ComponentDescriptorProvider)componentDescriptorProvider
@@ -28,25 +29,16 @@ using namespace facebook::react;
     static const auto defaultProps = std::make_shared<const PdfkitViewProps>();
     _props = defaultProps;
 
-    _view = [[UIView alloc] init];
+    _pdfView = [[PDFView alloc] initWithFrame:frame];
+    _pdfView.autoScales = YES;
+    _pdfView.displayMode = kPDFDisplaySinglePageContinuous;
 
-    self.contentView = _view;
+    self.contentView = _pdfView;
+
+    [self setupScrollViewObserver];
   }
 
   return self;
-}
-
-- (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps
-{
-    const auto &oldViewProps = *std::static_pointer_cast<PdfkitViewProps const>(_props);
-    const auto &newViewProps = *std::static_pointer_cast<PdfkitViewProps const>(props);
-
-    if (oldViewProps.color != newViewProps.color) {
-        NSString * colorToConvert = [[NSString alloc] initWithUTF8String: newViewProps.color.c_str()];
-        [_view setBackgroundColor:[self hexStringToColor:colorToConvert]];
-    }
-
-    [super updateProps:props oldProps:oldProps];
 }
 
 Class<RCTComponentViewProtocol> PdfkitViewCls(void)
@@ -54,18 +46,122 @@ Class<RCTComponentViewProtocol> PdfkitViewCls(void)
     return PdfkitView.class;
 }
 
-- hexStringToColor:(NSString *)stringToConvert
+- (void)setupScrollViewObserver
 {
-    NSString *noHashString = [stringToConvert stringByReplacingOccurrencesOfString:@"#" withString:@""];
-    NSScanner *stringScanner = [NSScanner scannerWithString:noHashString];
+    // Find the UIScrollView in PDFView's subviews
+    for (UIView *subview in _pdfView.subviews) {
+        if ([subview isKindOfClass:[UIScrollView class]]) {
+            _scrollView = (UIScrollView *)subview;
+            break;
+        }
+    }
 
-    unsigned hex;
-    if (![stringScanner scanHexInt:&hex]) return nil;
-    int r = (hex >> 16) & 0xFF;
-    int g = (hex >> 8) & 0xFF;
-    int b = (hex) & 0xFF;
+    if (!_scrollView) {
+        NSLog(@"Error: Could not find UIScrollView in PDFView subviews");
+        return;
+    }
 
-    return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1.0f];
+    // Add KVO observer for contentOffset
+    [_scrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
+}
+
+- (void)dealloc
+{
+    if (_scrollView) {
+        [_scrollView removeObserver:self forKeyPath:@"contentOffset"];
+    }
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
+{
+    if ([keyPath isEqualToString:@"contentOffset"] && object == _scrollView) {
+        [self emitContentOffsetChangeEvent];
+    } else {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    }
+}
+
+- (void)emitContentOffsetChangeEvent
+{
+    if (_scrollView && _eventEmitter) {
+        CGPoint contentOffset = _scrollView.contentOffset;
+        CGFloat zoomScale = _scrollView.zoomScale;
+
+        facebook::react::PdfkitViewEventEmitter::OnContentOffsetChange event;
+        event.contentOffsetX = contentOffset.x;
+        event.contentOffsetY = contentOffset.y;
+        event.zoomScale = zoomScale;
+
+        std::static_pointer_cast<const facebook::react::PdfkitViewEventEmitter>(_eventEmitter)->onContentOffsetChange(event);
+    }
+}
+
+- (void)handleCommand:(const NSString *)commandName args:(const NSArray *)args
+{
+    RCTPdfkitViewHandleCommand(self, commandName, args);
+}
+
+- (void)loadDocumentFromURL:(NSString *)url
+{
+    NSURL *documentURL = [NSURL URLWithString:url];
+    if (!documentURL) {
+        NSLog(@"Error: Invalid URL: %@", url);
+        return;
+    }
+
+    PDFDocument *document = [[PDFDocument alloc] initWithURL:documentURL];
+    if (!document) {
+        NSLog(@"Error: Could not load PDF document from URL: %@", url);
+        return;
+    }
+
+    _pdfView.document = document;
+}
+
+- (void)setViewport:(double)contentOffsetX contentOffsetY:(double)contentOffsetY zoomScale:(double)zoomScale animated:(BOOL)animated
+{
+    if (!_scrollView) {
+        NSLog(@"Error: ScrollView not found, cannot set viewport");
+        return;
+    }
+
+    if (animated) {
+        // For animated transitions, we need to animate both zoom and content offset
+        [UIView animateWithDuration:0.3 animations:^{
+            _scrollView.zoomScale = zoomScale;
+            CGPoint newOffset = CGPointMake(contentOffsetX, contentOffsetY);
+            [_scrollView setContentOffset:newOffset animated:NO];
+        }];
+    } else {
+        // Set zoom scale first
+        _scrollView.zoomScale = zoomScale;
+
+        // Then set content offset
+        CGPoint newOffset = CGPointMake(contentOffsetX, contentOffsetY);
+        [_scrollView setContentOffset:newOffset animated:NO];
+    }
+}
+
+- (void)setMinimumZoomScale:(double)scale
+{
+    if (!_scrollView) {
+        NSLog(@"Error: ScrollView not found, cannot set minimum zoom scale");
+        return;
+    }
+
+    _scrollView.minimumZoomScale = scale;
+    NSLog(@"Set minimum zoom scale to: %f", scale);
+}
+
+- (void)setMaximumZoomScale:(double)scale
+{
+    if (!_scrollView) {
+        NSLog(@"Error: ScrollView not found, cannot set maximum zoom scale");
+        return;
+    }
+
+    _scrollView.maximumZoomScale = scale;
+    NSLog(@"Set maximum zoom scale to: %f", scale);
 }
 
 @end
