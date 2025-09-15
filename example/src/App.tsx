@@ -1,106 +1,69 @@
-import { View, StyleSheet, TouchableOpacity, Text, SafeAreaView } from 'react-native';
-import { useRef, useEffect, useState } from 'react';
-import { PdfkitView, Commands } from 'react-native-pdfkit';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  SafeAreaView,
+} from 'react-native';
+import { useState } from 'react';
+import PdfkitViewExample from './PdfkitViewExample';
+import PDFViewExample from './PDFViewExample';
+
+type ExampleType = 'pdfkit' | 'pdfview';
 
 export default function App() {
-  const pdfViewRef = useRef(null);
-  const [savedViewport, setSavedViewport] = useState<{
-    contentOffsetX: number;
-    contentOffsetY: number;
-    zoomScale: number;
-  } | null>(null);
-  const [currentViewport, setCurrentViewport] = useState<{
-    contentOffsetX: number;
-    contentOffsetY: number;
-    zoomScale: number;
-  } | null>(null);
+  const [currentExample, setCurrentExample] = useState<ExampleType>('pdfview');
 
-  useEffect(() => {
-    if (pdfViewRef.current) {
-      Commands.loadDocumentFromURL(
-        pdfViewRef.current,
-        'https://dn790009.ca.archive.org/0/items/all-ps1-rpg-manuals/King%27s%20Field.pdf'
-      );
-    }
-  }, []);
-
-  const handleContentOffsetChange = (event: any) => {
-    const viewport = {
-      contentOffsetX: event.nativeEvent.contentOffsetX,
-      contentOffsetY: event.nativeEvent.contentOffsetY,
-      zoomScale: event.nativeEvent.zoomScale,
-    };
-
-    setCurrentViewport(viewport);
-    console.log('Content offset changed:', viewport);
-  };
-
-  const saveViewport = () => {
-    if (currentViewport) {
-      setSavedViewport(currentViewport);
-      console.log('Viewport saved:', currentViewport);
-    }
-  };
-
-  const restoreViewport = () => {
-    if (savedViewport && pdfViewRef.current) {
-      Commands.setViewport(
-        pdfViewRef.current,
-        savedViewport.contentOffsetX,
-        savedViewport.contentOffsetY,
-        savedViewport.zoomScale,
-        false
-      );
-      console.log('Viewport restored:', savedViewport);
-    }
-  };
-
-  const restoreViewportAnimated = () => {
-    if (savedViewport && pdfViewRef.current) {
-      Commands.setViewport(
-        pdfViewRef.current,
-        savedViewport.contentOffsetX,
-        savedViewport.contentOffsetY,
-        savedViewport.zoomScale,
-        true
-      );
-      console.log('Viewport restored with animation:', savedViewport);
+  const renderExample = () => {
+    switch (currentExample) {
+      case 'pdfkit':
+        return <PdfkitViewExample />;
+      case 'pdfview':
+        return <PDFViewExample />;
+      default:
+        return <PDFViewExample />;
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.buttonContainer}>
+      <View style={styles.switcherContainer}>
         <TouchableOpacity
-          style={[styles.button, !currentViewport && styles.buttonDisabled]}
-          onPress={saveViewport}
-          disabled={!currentViewport}
+          style={[
+            styles.switcherButton,
+            currentExample === 'pdfkit' && styles.switcherButtonActive,
+          ]}
+          onPress={() => setCurrentExample('pdfkit')}
         >
-          <Text style={styles.buttonText}>Save</Text>
+          <Text
+            style={[
+              styles.switcherButtonText,
+              currentExample === 'pdfkit' && styles.switcherButtonTextActive,
+            ]}
+          >
+            PdfkitView (Raw)
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, !savedViewport && styles.buttonDisabled]}
-          onPress={restoreViewport}
-          disabled={!savedViewport}
+          style={[
+            styles.switcherButton,
+            currentExample === 'pdfview' && styles.switcherButtonActive,
+          ]}
+          onPress={() => setCurrentExample('pdfview')}
         >
-          <Text style={styles.buttonText}>Restore</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, !savedViewport && styles.buttonDisabled]}
-          onPress={restoreViewportAnimated}
-          disabled={!savedViewport}
-        >
-          <Text style={styles.buttonText}>Restore ✨</Text>
+          <Text
+            style={[
+              styles.switcherButtonText,
+              currentExample === 'pdfview' && styles.switcherButtonTextActive,
+            ]}
+          >
+            PDFView (Wrapper)
+          </Text>
         </TouchableOpacity>
       </View>
 
-      <PdfkitView
-        ref={pdfViewRef}
-        style={styles.pdfView}
-        onContentOffsetChange={handleContentOffsetChange}
-      />
+      <View style={styles.exampleContainer}>{renderExample()}</View>
     </SafeAreaView>
   );
 }
@@ -109,32 +72,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  buttonContainer: {
+  switcherContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 10,
+    backgroundColor: '#e0e0e0',
     paddingHorizontal: 20,
-    backgroundColor: '#f0f0f0',
+    paddingVertical: 8,
   },
-  button: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
+  switcherButton: {
     flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     marginHorizontal: 4,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f5',
+    alignItems: 'center',
   },
-  buttonDisabled: {
-    backgroundColor: '#CCCCCC',
+  switcherButtonActive: {
+    backgroundColor: '#007AFF',
   },
-  buttonText: {
+  switcherButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+  },
+  switcherButtonTextActive: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
   },
-  pdfView: {
+  exampleContainer: {
     flex: 1,
-    width: '100%',
   },
 });
