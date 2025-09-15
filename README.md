@@ -8,7 +8,7 @@ React Native wrapper around some Apple PDFKit APIs
 
 
 ```sh
-npm install react-native-pdfkit
+npm install github:davidisaaclee/react-native-pdfkit
 ```
 
 
