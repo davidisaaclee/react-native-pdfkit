@@ -9,7 +9,7 @@ import type { CodegenTypes, ViewProps } from 'react-native';
 import PdfkitViewNativeComponent, {
   Commands,
   type ContentOffsetChangeEvent,
-} from './PdfkitViewNativeComponent';
+} from '../specs/PdfkitViewNativeComponent';
 
 export interface PDFViewProps extends ViewProps {
   /**

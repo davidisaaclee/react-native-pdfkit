@@ -151,7 +151,7 @@
   "codegenConfig": {
     "name": "PdfkitViewSpec",
     "type": "all",
-    "jsSrcsDir": "src",
+    "jsSrcsDir": "specs",
     "android": {
       "javaPackageName": "com.pdfkit"
     },
