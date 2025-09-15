@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "React Native wrapper around some Apple PDFKit APIs",
   "main": "./lib/module/index.js",
+  "module": "./src/index.ts",
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
     ".": {
