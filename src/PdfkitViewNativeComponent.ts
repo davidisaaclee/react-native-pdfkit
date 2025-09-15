@@ -6,7 +6,7 @@ import {
   type CodegenTypes,
 } from 'react-native';
 
-interface ContentOffsetChangeEvent {
+export interface ContentOffsetChangeEvent {
   contentOffsetX: CodegenTypes.Double;
   contentOffsetY: CodegenTypes.Double;
   zoomScale: CodegenTypes.Double;
