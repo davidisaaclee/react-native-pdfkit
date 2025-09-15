@@ -5,7 +5,7 @@ import {
   useEffect,
   useCallback,
 } from 'react';
-import { CodegenTypes } from 'react-native';
+import type { CodegenTypes, ViewProps } from 'react-native';
 import PdfkitViewNativeComponent, {
   Commands,
   type ContentOffsetChangeEvent,
