@@ -12,8 +12,8 @@ export interface ContentOffsetChangeEvent {
   zoomScale: CodegenTypes.Double;
 }
 
-interface NativeProps extends ViewProps {
-  onContentOffsetChange?: CodegenTypes.DirectEventHandler<ContentOffsetChangeEvent>;
+export interface NativeProps extends ViewProps {
+  onContentOffsetChange?: CodegenTypes.BubblingEventHandler<ContentOffsetChangeEvent> | null;
 }
 
 interface NativeCommands {
