@@ -124,22 +124,11 @@ Class<RCTComponentViewProtocol> PdfkitViewCls(void)
         NSLog(@"Error: ScrollView not found, cannot set viewport");
         return;
     }
-
-    if (animated) {
-        // For animated transitions, we need to animate both zoom and content offset
-        [UIView animateWithDuration:0.3 animations:^{
-            _scrollView.zoomScale = zoomScale;
-            CGPoint newOffset = CGPointMake(contentOffsetX, contentOffsetY);
-            [_scrollView setContentOffset:newOffset animated:NO];
-        }];
-    } else {
-        // Set zoom scale first
-        _scrollView.zoomScale = zoomScale;
-
-        // Then set content offset
-        CGPoint newOffset = CGPointMake(contentOffsetX, contentOffsetY);
-        [_scrollView setContentOffset:newOffset animated:NO];
-    }
+  
+  [_scrollView setZoomScale:zoomScale
+                   animated:animated];
+  [_scrollView setContentOffset:CGPointMake(contentOffsetX, contentOffsetY)
+                       animated:animated];
 }
 
 - (void)setMinimumZoomScale:(double)scale
