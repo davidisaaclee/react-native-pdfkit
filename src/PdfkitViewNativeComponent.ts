@@ -13,7 +13,6 @@ interface ContentOffsetChangeEvent {
 }
 
 interface NativeProps extends ViewProps {
-  color?: string;
   onContentOffsetChange?: CodegenTypes.DirectEventHandler<ContentOffsetChangeEvent>;
 }
 
