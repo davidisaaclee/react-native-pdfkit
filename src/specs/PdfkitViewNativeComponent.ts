@@ -3,17 +3,20 @@ import {
   codegenNativeComponent,
   type HostComponent,
   type ViewProps,
-  type CodegenTypes,
 } from 'react-native';
+import type {
+  Double,
+  DirectEventHandler,
+} from 'react-native/Libraries/Types/CodegenTypesNamespace';
 
 export interface ContentOffsetChangeEvent {
-  contentOffsetX: CodegenTypes.Double;
-  contentOffsetY: CodegenTypes.Double;
-  zoomScale: CodegenTypes.Double;
+  contentOffsetX: Double;
+  contentOffsetY: Double;
+  zoomScale: Double;
 }
 
 interface NativeProps extends ViewProps {
-  onContentOffsetChange?: CodegenTypes.DirectEventHandler<ContentOffsetChangeEvent>;
+  onContentOffsetChange?: DirectEventHandler<ContentOffsetChangeEvent>;
 }
 
 interface NativeCommands {
@@ -23,18 +26,18 @@ interface NativeCommands {
   ) => void;
   setViewport: (
     viewRef: React.ElementRef<HostComponent<NativeProps>>,
-    contentOffsetX: CodegenTypes.Double,
-    contentOffsetY: CodegenTypes.Double,
-    zoomScale: CodegenTypes.Double,
+    contentOffsetX: Double,
+    contentOffsetY: Double,
+    zoomScale: Double,
     animated: boolean
   ) => void;
   setMinimumZoomScale: (
     viewRef: React.ElementRef<HostComponent<NativeProps>>,
-    scale: CodegenTypes.Double
+    scale: Double
   ) => void;
   setMaximumZoomScale: (
     viewRef: React.ElementRef<HostComponent<NativeProps>>,
-    scale: CodegenTypes.Double
+    scale: Double
   ) => void;
 }
 
