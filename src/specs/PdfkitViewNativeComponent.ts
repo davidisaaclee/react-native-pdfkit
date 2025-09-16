@@ -1,4 +1,6 @@
 import { codegenNativeCommands } from 'react-native';
+import type { DirectEventHandler } from 'react-native/Libraries/Types/CodegenTypesNamespace';
+
 import {
   codegenNativeComponent,
   type HostComponent,
@@ -13,7 +15,7 @@ export interface ContentOffsetChangeEvent {
 }
 
 export interface NativeProps extends ViewProps {
-  onContentOffsetChange?: CodegenTypes.BubblingEventHandler<ContentOffsetChangeEvent> | null;
+  onContentOffsetChange?: DirectEventHandler<ContentOffsetChangeEvent>;
 }
 
 interface NativeCommands {
